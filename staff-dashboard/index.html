@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TapCall - Staff Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>TapCall Staff Dashboard</h1>
+            <div class="org-info">
+                <span id="orgName">Restaurant Staff</span>
+                <div class="stats">
+                    <span class="stat" id="pendingCount">0 pending</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="refresh-btn" onclick="loadRequests()">
+                 Refresh
+            </button>
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="setFilter('all')">All</button>
+                <button class="filter-btn" onclick="setFilter('waiter')">Waiter</button>
+                <button class="filter-btn" onclick="setFilter('bill')">Bill</button>
+            </div>
+        </div>
+
+        <div class="requests-container">
+            <h2>Live Requests</h2>
+            <div id="requestsList" class="requests-list">
+                <div id="emptyState" class="empty-state">
+                    <p>No pending requests</p>
+                    <p class="subtext">Requests will appear here when customers call</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>TapCall Staff Dashboard v1.0</p>
+        </div>
+    </div>
+    <div class="controls">
+    <button class="refresh-btn" onclick="loadRequests()">
+         Refresh
+    </button>
+    <button class="refresh-btn" onclick="window.location.href='qr-generator.html'" 
+            style="background: #5856D6;">
+         QR Generator
+    </button>
+    <div class="filter-buttons">
+        <button class="filter-btn active" onclick="setFilter('all')">All</button>
+        <button class="filter-btn" onclick="setFilter('waiter')">Waiter</button>
+        <button class="filter-btn" onclick="setFilter('bill')">Bill</button>
+    </div>
+</div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

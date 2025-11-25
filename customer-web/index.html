@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TapCall - Call Service</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="business-name">Welcome to Restaurant</h1>
+            <div class="table-info" id="tableInfo">
+                <!-- Table info will be filled by JavaScript -->
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="request-section" id="requestSection">
+                <h2>How can we help you?</h2>
+                
+                <button class="request-btn waiter-btn" onclick="callWaiter()">
+                    <span class="icon">👨‍💼</span>
+                    <span class="text">Call Waiter</span>
+                </button>
+                
+                <button class="request-btn bill-btn" onclick="requestBill()">
+                    <span class="icon">🧾</span>
+                    <span class="text">Request Bill</span>
+                </button>
+            </div>
+
+            <div class="status-section" id="statusSection" style="display: none;">
+                <div class="status-message" id="statusMessage">
+                    <!-- Status message will appear here -->
+                </div>
+                <div class="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <button class="cancel-btn" id="cancelBtn" onclick="cancelRequest()" style="display: none;">
+                    <span class="icon">❌</span>
+                    <span class="text">Cancel Request</span>
+                </button>
+            </div>
+
+            <div class="completed-section" id="completedSection" style="display: none;">
+                <div class="completed-message">
+                    <span class="icon">✅</span>
+                    <span class="text">Request Completed!</span>
+                </div>
+                <p class="subtext">Thank you for using TapCall</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Powered by <strong>TapCall</strong></p>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
