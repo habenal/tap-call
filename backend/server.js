@@ -8,6 +8,14 @@ const qr = require('qr-image');
 const app = express();
 const server = http.createServer(app);
 
+
+const express = require('express');
+const cors = require('cors');
+
+// Allow all origins (for testing purposes)
+app.use(cors());
+// Optional: allow JSON body parsing
+app.use(express.json());
 // Simple in-memory storage
 let requests = [];
 let requestId = 1;
