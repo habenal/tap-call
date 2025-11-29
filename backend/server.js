@@ -115,6 +115,22 @@ app.get('/api/qr-dataurl/:tableId', (req, res) => {
     res.status(500).json({ error: 'Failed to generate QR code' });
   }
 });
+// QR Code download route
+app.get('/api/qr-download/:tableId', (req, res) => {
+  const tableId = req.params.tableId;
+  const tableName = req.query.table_name || `Table ${tableId}`;
+  const customerUrl = `http://tap-call.onrender.com/customer/index.html?table_id=${tableId}&table_name=${encodeURIComponent(tableName)}`;
+
+  try {
+    const qr_png = qr.image(customerUrl, { type: 'png' });
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Disposition', `attachment; filename="table-${tableId}-qr.png"`);
+    qr_png.pipe(res); // send the PNG file to browser
+  } catch (err) {
+    console.error('❌ Error generating QR code:', err);
+    res.status(500).json({ error: 'Failed to generate QR code' });
+  }
+});
 
 // Socket.io connection
 io.on('connection', (socket) => {
