@@ -16,6 +16,7 @@ const cors = require('cors');
 app.use(cors());
 // Optional: allow JSON body parsing
 app.use(express.json());
+
 // Simple in-memory storage
 let requests = [];
 let requestId = 1;
@@ -194,6 +195,10 @@ io.on('connection', (socket) => {
 
 // Start server
 const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+});
 server.listen(PORT, () => {
     console.log('🚀 TapCall Server Started!');
     console.log(`📍 Running on: http://localhost:${PORT}`);
