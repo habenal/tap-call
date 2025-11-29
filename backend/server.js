@@ -163,7 +163,7 @@ app.get('/api/qr-dataurl/:tableId', (req, res) => {
     console.log('📷 Generating QR code for:', tableName);
     
     const networkIP = '192.168.8.134';
-    const customerUrl = `http://${networkIP}:3000/customer/index.html?table_id=${tableId}&table_name=${encodeURIComponent(tableName)}`;
+    const customerUrl = `http://tap-call.onrender.com/customer/index.html?table_id=${tableId}&table_name=${encodeURIComponent(tableName)}`;
     
     try {
         const qr_png = qr.imageSync(customerUrl, { type: 'png' });
