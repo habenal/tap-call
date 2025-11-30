@@ -8,4 +8,18 @@ A simplified QR-based service request system for restaurants.
 - Real-time notifications using Socket.io
 - PostgreSQL database
 
-## Project Structure# tap-call
+## Project Structure
+tapcall-simple/
+├── backend/ # Node.js/Express server
+├── customer-web/ # Customer-facing web app
+├── staff-dashboard/ # Staff management dashboard
+└── README.md
+
+## Setup Instructions
+
+### 1. Database Setup
+```bash
+# Create PostgreSQL database
+createdb tapcall
+
+# Run schema setup (see backend/setup.sql)

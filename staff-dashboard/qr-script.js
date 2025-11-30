@@ -31,9 +31,16 @@ async function generateQRCode() {
         const data = await response.json();
         
         if (data.success) {
-            currentQRData = data;
-            
-            // Display QR code
+
+            // Store useful data for later (download/print)
+            currentQRData = {
+                tableId,
+                tableName,
+                dataUrl: data.dataUrl,
+                customerUrl: data.customerUrl
+            };
+
+            // Display QR
             document.getElementById('qrImage').src = data.dataUrl;
             document.getElementById('qrTableName').textContent = tableName;
             document.getElementById('qrUrl').textContent = data.customerUrl;
@@ -41,7 +48,6 @@ async function generateQRCode() {
             
             console.log('✅ QR code generated successfully');
             
-            // Test the URL
             testQRUrl(data.customerUrl);
         } else {
             throw new Error(data.error || 'Failed to generate QR code');
@@ -55,29 +61,26 @@ async function generateQRCode() {
 // Test if the QR URL is accessible
 async function testQRUrl(url) {
     try {
-        const response = await fetch(url);
-        if (response.ok) {
-            console.log('✅ QR URL is accessible:', url);
-        } else {
-            console.warn('⚠️ QR URL returned status:', response.status);
-        }
+        const response = await fetch(url, { mode: "no-cors" });
+        console.log('ℹ️ Tested URL:', url);
     } catch (error) {
-        console.error('❌ QR URL is not accessible:', error.message);
-        // Don't show alert here, just log it
+        console.warn('⚠️ Unable to test customer URL:', error.message);
     }
 }
-// Download QR code as PNG
+
+// ----------- FIXED DOWNLOAD FUNCTION -----------
 function downloadQRCode() {
     if (!currentQRData) {
         alert('Please generate a QR code first');
         return;
     }
-    
+
     const link = document.createElement('a');
-    link.href = `/api/qr/${currentQRData.tableId}?table_name=${encodeURIComponent(currentQRData.tableName)}&business=${encodeURIComponent(document.getElementById('businessName').value)}`;
+    link.href = currentQRData.dataUrl;
     link.download = `table-${currentQRData.tableId}-qrcode.png`;
     link.click();
 }
+// ----------------------------------------------
 
 // Print QR code
 function printQRCode() {
@@ -142,7 +145,7 @@ function generateQuickTables() {
         });
     }
     
-    // Add some room examples
+    // Add room examples
     tables.push(
         { id: 101, name: 'Room 101' },
         { id: 102, name: 'Room 102' },
