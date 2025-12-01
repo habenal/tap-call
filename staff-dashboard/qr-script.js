@@ -63,35 +63,40 @@ async function testQRUrl(url) {
         }
     } catch (error) {
         console.error('❌ QR URL is not accessible:', error.message);
-        // Don't show alert here, just log it
+        // Silent fail
     }
 }
 
-// Download QR code as PNG
+// Download QR code as PNG (FIXED)
 function downloadQRCode() {
     if (!currentQRData) {
         alert('Please generate a QR code first');
         return;
     }
 
-    const link = document.createElement('a');
-    link.href = `/api/qr/${currentQRData.tableId}?table_name=${encodeURIComponent(currentQRData.tableName)}&business=${encodeURIComponent(document.getElementById('businessName').value)}`;
-    link.download = `table-${currentQRData.tableId}-qrcode.png`;
-    link.click();
+    const tableId = currentQRData.tableId || currentQRData.table_id;
+    const tableName = currentQRData.tableName || currentQRData.table_name;
+
+    const downloadUrl =
+        `/api/qr-download/${tableId}?table_name=${encodeURIComponent(tableName)}`;
+
+    window.open(downloadUrl, "_blank");
 }
 
-// Print QR code with updated layout
+// Print QR code with updated layout (CORRECTED)
 function printQRCode() {
     if (!currentQRData) {
         alert('Please generate a QR code first');
         return;
     }
 
+    const tableName = currentQRData.tableName || currentQRData.table_name;
+
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
         <html>
             <head>
-                <title>QR Code - ${currentQRData.tableName}</title>
+                <title>QR Code - ${tableName}</title>
                 <style>
                     body { 
                         font-family: Arial, sans-serif; 
@@ -102,6 +107,7 @@ function printQRCode() {
                         font-size: 24px;
                         font-weight: bold;
                         margin-bottom: 20px;
+                        text-transform: uppercase;
                     }
                     .qr-container { 
                         margin: 20px auto; 
@@ -126,7 +132,7 @@ function printQRCode() {
                 </style>
             </head>
             <body>
-                <div class="table-name">${currentQRData.tableName}</div>
+                <div class="table-name">${tableName}</div>
                 <div class="qr-container">
                     <img src="${currentQRData.dataUrl}" alt="QR Code">
                 </div>
