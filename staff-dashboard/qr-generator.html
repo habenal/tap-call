@@ -10,18 +10,15 @@
         .qr-generator {
             padding: 20px;
         }
-        
         .form-group {
             margin-bottom: 20px;
         }
-        
         .form-group label {
             display: block;
             margin-bottom: 5px;
             font-weight: 500;
             color: #333;
         }
-        
         .form-group input, .form-group select {
             width: 100%;
             padding: 10px;
@@ -29,7 +26,6 @@
             border-radius: 5px;
             font-family: 'Poppins', sans-serif;
         }
-        
         .generate-btn {
             background: #007AFF;
             color: white;
@@ -41,7 +37,6 @@
             font-weight: 500;
             margin-right: 10px;
         }
-        
         .download-btn {
             background: #34C759;
             color: white;
@@ -52,13 +47,11 @@
             font-family: 'Poppins', sans-serif;
             font-weight: 500;
         }
-        
         .qr-result {
             margin-top: 30px;
             text-align: center;
             display: none;
         }
-        
         .qr-image {
             max-width: 300px;
             border: 1px solid #ddd;
@@ -67,21 +60,18 @@
             background: white;
             margin: 0 auto 20px;
         }
-        
         .qr-info {
             background: #f8f9fa;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
         }
-        
         .tables-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 20px;
             margin-top: 20px;
         }
-        
         .table-card {
             border: 1px solid #e9ecef;
             border-radius: 10px;
@@ -89,7 +79,6 @@
             text-align: center;
             background: white;
         }
-        
         .back-btn {
             background: #6c757d;
             color: white;
@@ -131,17 +120,17 @@
                 <label for="businessName">Business Name</label>
                 <input type="text" id="businessName" value="Our Restaurant" placeholder="Your business name">
             </div>
+            
             <div class="form-group">
-    <label for="customUrl">Custom Base URL (Optional - for testing)</label>
-    <input type="text" id="customUrl" placeholder="https://your-public-url.com" 
-           value="https://tap-call.onrender.com/customer/index.html">
-    <small style="color: #666; font-size: 12px;">
-        Use this to test with different URLs. Leave empty for automatic detection.
-    </small>
-</div>
-            <button class="generate-btn" onclick="generateQRCode()">
-                Generate QR Code
-            </button>
+                <label for="customUrl">Custom Base URL (Optional - for testing)</label>
+                <input type="text" id="customUrl" placeholder="https://your-public-url.com" 
+                       value="https://tap-call.onrender.com/customer/index.html">
+                <small style="color: #666; font-size: 12px;">
+                    Use this to test with different URLs. Leave empty for automatic detection.
+                </small>
+            </div>
+
+            <button class="generate-btn" onclick="generateQRCode()">Generate QR Code</button>
             
             <div class="qr-result" id="qrResult">
                 <h3>Your QR Code is Ready!</h3>
@@ -152,12 +141,8 @@
                     <p><strong>Table:</strong> <span id="qrTableName"></span></p>
                     <p><strong>URL:</strong> <span id="qrUrl" style="font-size: 12px; word-break: break-all;"></span></p>
                 </div>
-                <button class="download-btn" onclick="downloadQRCode()">
-                    Download PNG
-                </button>
-                <button class="generate-btn" onclick="printQRCode()">
-                    Print QR Code
-                </button>
+                <button class="download-btn" onclick="downloadQRCode()">Download PNG</button>
+                <button class="generate-btn" onclick="printQRCode()">Print QR Code</button>
             </div>
         </div>
 
