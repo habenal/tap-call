@@ -6,60 +6,65 @@
     <title>TapCall - Staff Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f5f5f5; }
+        .container { max-width: 900px; margin: 20px auto; padding: 20px; background: white; border-radius: 10px; }
+        .header h1 { margin-bottom: 10px; }
+        .controls { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-buttons button, .refresh-btn, select { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; cursor: pointer; }
+        .filter-buttons button.active { background: #007AFF; color: white; border-color: #007AFF; }
+        .requests-list { display: flex; flex-direction: column; gap: 10px; }
+        .request-card { padding: 12px 15px; background: #f0f0f0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .request-info { display: flex; flex-direction: column; }
+        .request-type { font-weight: 500; }
+        .complete-btn { background: #34C759; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+        .empty-state { text-align: center; color: #888; margin-top: 20px; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>TapCall Staff Dashboard</h1>
-            <div class="org-info">
-                <span id="orgName">Restaurant Staff</span>
-                <div class="stats">
-                    <span class="stat" id="pendingCount">0 pending</span>
-                </div>
+<div class="container">
+    <div class="header">
+        <h1>TapCall Staff Dashboard</h1>
+        <div class="org-info">
+            <span id="orgName">Restaurant Staff</span>
+            <div class="stats">
+                <span class="stat" id="pendingCount">0 pending</span>
             </div>
-        </div>
-
-        <div class="controls">
-            <button class="refresh-btn" onclick="loadRequests()">
-                 Refresh
-            </button>
-            <div class="filter-buttons">
-                <button class="filter-btn active" onclick="setFilter('all')">All</button>
-                <button class="filter-btn" onclick="setFilter('waiter')">Waiter</button>
-                <button class="filter-btn" onclick="setFilter('bill')">Bill</button>
-            </div>
-        </div>
-
-        <div class="requests-container">
-            <h2>Live Requests</h2>
-            <div id="requestsList" class="requests-list">
-                <div id="emptyState" class="empty-state">
-                    <p>No pending requests</p>
-                    <p class="subtext">Requests will appear here when customers call</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="footer">
-            <p>TapCall Staff Dashboard v1.0</p>
         </div>
     </div>
+
     <div class="controls">
-    <button class="refresh-btn" onclick="loadRequests()">
-         Refresh
-    </button>
-    <button class="refresh-btn" onclick="window.location.href='qr-generator.html'" 
-            style="background: #5856D6;">
-         QR Generator
-    </button>
-    <div class="filter-buttons">
-        <button class="filter-btn active" onclick="setFilter('all')">All</button>
-        <button class="filter-btn" onclick="setFilter('waiter')">Waiter</button>
-        <button class="filter-btn" onclick="setFilter('bill')">Bill</button>
+        <label for="cafeSelect">Select Café:</label>
+        <select id="cafeSelect">
+            <option value="CAFE001">Kabun</option>
+            <option value="CAFE002">Cafe Two</option>
+            <option value="CAFE003">Cafe Three</option>
+            <option value="CAFE004">Cafe Four</option>
+            <option value="CAFE005">Cafe Five</option>
+        </select>
+
+        <button class="refresh-btn" onclick="loadRequests()">Refresh</button>
+
+        <div class="filter-buttons">
+            <button class="filter-btn active" onclick="setFilter('all', event)">All</button>
+            <button class="filter-btn" onclick="setFilter('waiter', event)">Waiter</button>
+            <button class="filter-btn" onclick="setFilter('bill', event)">Bill</button>
+        </div>
     </div>
+
+    <div class="requests-container">
+        <h2>Live Requests</h2>
+        <div id="requestsList" class="requests-list">
+            <div id="emptyState" class="empty-state">
+                <p>No pending requests</p>
+                <p class="subtext">Requests will appear here when customers call</p>
+            </div>
+        </div>
+    </div>
+
 </div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="script.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

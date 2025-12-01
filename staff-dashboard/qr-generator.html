@@ -52,20 +52,39 @@
             text-align: center;
             display: none;
         }
-        .qr-image {
-            max-width: 300px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 20px;
+
+        /* UNIFIED QR CARD STYLE (Matches Print/PNG) */
+        .qr-card {
+            width: 300px;
             background: white;
-            margin: 0 auto 20px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 0 auto;
+            font-family: 'Poppins', sans-serif;
         }
-        .qr-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        .qr-card h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            font-weight: 600;
         }
+        .qr-card img {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .scan-text {
+            margin-top: 15px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .powered {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #666;
+        }
+
         .tables-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -92,6 +111,7 @@
 </head>
 <body>
     <div class="container">
+
         <div class="header">
             <h1>TapCall QR Code Generator</h1>
             <div class="org-info">
@@ -106,56 +126,67 @@
         </div>
 
         <div class="qr-generator">
+
             <div class="form-group">
                 <label for="tableId">Table Number</label>
                 <input type="number" id="tableId" value="1" min="1">
             </div>
+            <div class="form-group">
+  <label for="cafeSelect">Select Cafe</label>
+  <select id="cafeSelect">
+    <option value="CAFE001">Kabun</option>
+    <option value="CAFE002">Cafe Two</option>
+    <option value="CAFE003">Cafe Three</option>
+    <option value="CAFE004">Cafe Four</option>
+    <option value="CAFE005">Cafe Five</option>
+  </select>
+</div>
+
             
             <div class="form-group">
                 <label for="tableName">Table Name (Display Name)</label>
-                <input type="text" id="tableName" value="Table 1" placeholder="e.g., Table 1, Room 101, etc.">
+                <input type="text" id="tableName" value="Table 1">
             </div>
             
             <div class="form-group">
                 <label for="businessName">Business Name</label>
-                <input type="text" id="businessName" value="Our Restaurant" placeholder="Your business name">
+                <input type="text" id="businessName" value="Our Restaurant">
             </div>
             
             <div class="form-group">
                 <label for="customUrl">Custom Base URL (Optional - for testing)</label>
-                <input type="text" id="customUrl" placeholder="https://your-public-url.com" 
+                <input type="text" id="customUrl" 
                        value="https://tap-call.onrender.com/customer/index.html">
-                <small style="color: #666; font-size: 12px;">
-                    Use this to test with different URLs. Leave empty for automatic detection.
-                </small>
             </div>
 
             <button class="generate-btn" onclick="generateQRCode()">Generate QR Code</button>
-            
+
             <div class="qr-result" id="qrResult">
-                <h3>Your QR Code is Ready!</h3>
-                <div class="qr-image">
-                    <img id="qrImage" src="" alt="QR Code" style="max-width: 100%;">
+
+                <div class="qr-card" id="qrCard">
+                    <h2 id="qrCardTableName"></h2>
+                    <img id="qrCardImage" src="">
+                    <div class="scan-text">Scan to call waiter</div>
+                    <div class="powered">Powered by RoG Digitals</div>
                 </div>
-                <div class="qr-info">
-                    <p><strong>Table:</strong> <span id="qrTableName"></span></p>
-                    <p><strong>URL:</strong> <span id="qrUrl" style="font-size: 12px; word-break: break-all;"></span></p>
+
+                <div style="margin-top: 20px;">
+                    <button class="download-btn" onclick="downloadQRCode()">Download PNG</button>
+                    <button class="generate-btn" onclick="printQRCode()">Print</button>
                 </div>
-                <button class="download-btn" onclick="downloadQRCode()">Download PNG</button>
-                <button class="generate-btn" onclick="printQRCode()">Print QR Code</button>
+
             </div>
         </div>
 
         <div class="quick-generate" style="padding: 20px; border-top: 1px solid #e9ecef;">
             <h3>Quick Generate Multiple Tables</h3>
-            <div class="tables-grid" id="tablesGrid">
-                <!-- Tables will be generated here -->
-            </div>
+            <div class="tables-grid" id="tablesGrid"></div>
         </div>
 
         <div class="footer">
             <p>TapCall QR Generator v1.0</p>
         </div>
+
     </div>
 
     <script src="qr-script.js"></script>
