@@ -5,10 +5,10 @@ function initQRGenerator() {
 }
 
 async function generateQRCode() {
-    const tableId = document.getElementById('tableId').value;
-    const tableName = document.getElementById('tableName').value;
-    const businessName = document.getElementById('businessName').value;
-    const customUrl = document.getElementById('customUrl').value;
+    const tableId = document.getElementById('tableId').value.trim();
+    const tableName = document.getElementById('tableName').value.trim();
+    const businessName = document.getElementById('businessName').value.trim() || 'Our Restaurant';
+    const customUrl = document.getElementById('customUrl').value.trim();
 
     if (!tableId || !tableName) return alert("Please fill in Table Number and Table Name");
 
@@ -23,7 +23,7 @@ async function generateQRCode() {
 
         currentQRData = data;
 
-        // Render QR image with header/footer
+        // Render QR image with decoration
         const qrImg = document.getElementById('qrImage');
         qrImg.src = await createDecoratedQR(data.dataUrl, tableName);
 
@@ -35,7 +35,6 @@ async function generateQRCode() {
     }
 }
 
-// Decorate QR image for on-page display
 async function createDecoratedQR(dataUrl, tableName) {
     return new Promise(resolve => {
         const img = new Image();
@@ -45,7 +44,7 @@ async function createDecoratedQR(dataUrl, tableName) {
             const ctx = canvas.getContext('2d');
             const padding = 40;
             canvas.width = img.width + padding * 2;
-            canvas.height = img.height + padding * 2 + 80; // extra for header/footer
+            canvas.height = img.height + padding * 2 + 80; // header/footer space
 
             ctx.fillStyle = "#fff";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -70,7 +69,6 @@ async function createDecoratedQR(dataUrl, tableName) {
     });
 }
 
-// Download QR
 function downloadQRCode() {
     if (!currentQRData) return alert("Generate QR first");
 
@@ -80,7 +78,6 @@ function downloadQRCode() {
     link.click();
 }
 
-// Print QR
 function printQRCode() {
     if (!currentQRData) return alert("Generate QR first");
 
@@ -112,7 +109,6 @@ function printQRCode() {
     printWindow.print();
 }
 
-// Quick tables
 function generateQuickTables() {
     const tables = [];
     for (let i=1;i<=10;i++) tables.push({id:i, name:`Table ${i}`});
@@ -127,7 +123,6 @@ function generateQuickTables() {
     `).join('');
 }
 
-// Quick generate
 function quickGenerate(id,name) {
     document.getElementById('tableId').value = id;
     document.getElementById('tableName').value = name;
