@@ -1,125 +1,137 @@
-// qr-script.js
+let currentQRData = null;
 
-// Generate QR Code for selected table
-function generateQRCode() {
-    const tableId = document.getElementById('tableId').value;
-    const tableName = document.getElementById('tableName').value || `Table ${tableId}`;
-    const cafeId = document.getElementById('cafeSelect').value;
-    const businessName = document.getElementById('businessName').value || 'Our Restaurant';
-
-    if (!cafeId) {
-        alert('❌ Please select a café');
-        return;
-    }
-
-    const apiUrl = `/api/qr-dataurl/${tableId}?table_name=${encodeURIComponent(tableName)}&cafe_id=${cafeId}`;
-
-    fetch(apiUrl)
-        .then(res => {
-            if (!res.ok) throw new Error('Network response was not ok');
-            return res.json();
-        })
-        .then(data => {
-            if (data.success) {
-                const qrImg = document.getElementById('qrCardImage');
-                const qrCardTableName = document.getElementById('qrCardTableName');
-
-                qrImg.src = data.dataUrl;
-                qrCardTableName.textContent = `${businessName} - ${tableName}`;
-                document.getElementById('qrResult').style.display = 'block';
-            } else {
-                alert('❌ Error generating QR code: ' + (data.error || 'Unknown error'));
-            }
-        })
-        .catch(err => {
-            console.error('❌ QR generation failed:', err);
-            alert('❌ QR generation failed: ' + err.message);
-        });
+function initQRGenerator() {
+    generateQuickTables();
 }
 
-// Download QR Code PNG
+async function generateQRCode() {
+    const tableId = document.getElementById('tableId').value;
+    const tableName = document.getElementById('tableName').value;
+    const businessName = document.getElementById('businessName').value;
+    const customUrl = document.getElementById('customUrl').value;
+
+    if (!tableId || !tableName) return alert("Please fill in Table Number and Table Name");
+
+    try {
+        let url = `/api/qr-dataurl/${tableId}?table_name=${encodeURIComponent(tableName)}&business=${encodeURIComponent(businessName)}`;
+        if (customUrl) url += `&custom_url=${encodeURIComponent(customUrl)}`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data.success) throw new Error(data.error || "Failed to generate QR code");
+
+        currentQRData = data;
+
+        // Render QR image with header/footer
+        const qrImg = document.getElementById('qrImage');
+        qrImg.src = await createDecoratedQR(data.dataUrl, tableName);
+
+        document.getElementById('qrResult').style.display = 'block';
+
+    } catch (err) {
+        console.error(err);
+        alert("Error: " + err.message);
+    }
+}
+
+// Decorate QR image for on-page display
+async function createDecoratedQR(dataUrl, tableName) {
+    return new Promise(resolve => {
+        const img = new Image();
+        img.src = dataUrl;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const padding = 40;
+            canvas.width = img.width + padding * 2;
+            canvas.height = img.height + padding * 2 + 80; // extra for header/footer
+
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Header
+            ctx.fillStyle = "#000";
+            ctx.font = "bold 24px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(tableName, canvas.width / 2, 30);
+
+            // QR
+            ctx.drawImage(img, padding, 50);
+
+            // Footer
+            ctx.font = "18px Arial";
+            ctx.fillText("Scan to call waiter", canvas.width / 2, canvas.height - 30);
+            ctx.font = "14px Arial";
+            ctx.fillText("Powered by RoG Digitals", canvas.width / 2, canvas.height - 10);
+
+            resolve(canvas.toDataURL());
+        }
+    });
+}
+
+// Download QR
 function downloadQRCode() {
-    const tableId = document.getElementById('tableId').value;
-    const tableName = document.getElementById('tableName').value || `Table ${tableId}`;
-    const cafeId = document.getElementById('cafeSelect').value;
+    if (!currentQRData) return alert("Generate QR first");
 
-    if (!cafeId) {
-        alert('❌ Please select a café');
-        return;
-    }
-
-    const downloadUrl = `/api/qr-download/${tableId}?table_name=${encodeURIComponent(tableName)}&cafe_id=${cafeId}`;
-    window.open(downloadUrl, '_blank');
+    const link = document.createElement('a');
+    link.href = `/api/qr-download/${currentQRData.tableId}?table_name=${encodeURIComponent(currentQRData.tableName)}`;
+    link.download = `table-${currentQRData.tableId}-qr.png`;
+    link.click();
 }
 
-// Print QR Code
+// Print QR
 function printQRCode() {
-    const qrCard = document.getElementById('qrCard');
-    if (!qrCard) return;
+    if (!currentQRData) return alert("Generate QR first");
 
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
         <html>
-        <head>
-            <title>Print QR Code</title>
-            <style>
-                body { font-family: 'Poppins', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-                .qr-card { width: 300px; background: white; border: 1px solid #ddd; border-radius: 12px; padding: 20px; text-align: center; }
-                .qr-card h2 { font-size: 20px; margin-bottom: 15px; }
-                .qr-card img { width: 100%; border-radius: 10px; border: 1px solid #ddd; padding: 10px; }
-                .scan-text { margin-top: 15px; font-size: 16px; font-weight: 500; }
-                .powered { margin-top: 12px; font-size: 12px; color: #666; }
-            </style>
-        </head>
-        <body>
-            ${qrCard.outerHTML}
-        </body>
+            <head>
+                <title>${currentQRData.tableName} - QR Code</title>
+                <style>
+                    body { font-family: Arial,sans-serif; text-align: center; padding: 40px; }
+                    .table-name { font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+                    .qr-container { margin: 20px auto; max-width: 300px; }
+                    img { max-width: 100%; border: 1px solid #ddd; padding: 10px; border-radius: 10px; background:#fff; }
+                    .scan-text { margin-top: 20px; font-size: 18px; font-weight: 500; }
+                    .footer { margin-top: 30px; font-size: 14px; color: #666; }
+                </style>
+            </head>
+            <body>
+                <div class="table-name">${currentQRData.tableName}</div>
+                <div class="qr-container">
+                    <img src="${currentQRData.dataUrl}" alt="QR Code">
+                </div>
+                <div class="scan-text">Scan to call waiter</div>
+                <div class="footer">Powered by RoG Digitals</div>
+            </body>
         </html>
     `);
     printWindow.document.close();
-    printWindow.focus();
     printWindow.print();
-    printWindow.close();
 }
 
-// Quick generate multiple tables
-function quickGenerateTables(count = 10) {
-    const cafeId = document.getElementById('cafeSelect').value;
-    if (!cafeId) {
-        alert('❌ Please select a café');
-        return;
-    }
+// Quick tables
+function generateQuickTables() {
+    const tables = [];
+    for (let i=1;i<=10;i++) tables.push({id:i, name:`Table ${i}`});
+    tables.push({id:101,name:"Room 101"},{id:102,name:"Room 102"},{id:201,name:"Suite 201"});
 
-    const tablesGrid = document.getElementById('tablesGrid');
-    tablesGrid.innerHTML = '';
-
-    for (let i = 1; i <= count; i++) {
-        const tableName = `Table ${i}`;
-        const apiUrl = `/api/qr-dataurl/${i}?table_name=${encodeURIComponent(tableName)}&cafe_id=${cafeId}`;
-
-        fetch(apiUrl)
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    const card = document.createElement('div');
-                    card.className = 'table-card';
-                    card.innerHTML = `
-                        <h3>${tableName}</h3>
-                        <img src="${data.dataUrl}" alt="QR Code" style="max-width: 100%; margin-bottom: 10px;">
-                        <button onclick="window.open('/api/qr-download/${i}?table_name=${encodeURIComponent(tableName)}&cafe_id=${cafeId}', '_blank')">
-                            Download
-                        </button>
-                    `;
-                    tablesGrid.appendChild(card);
-                } else {
-                    console.error('Error generating QR for table', i, data.error);
-                }
-            })
-            .catch(err => console.error('QR fetch error:', err));
-    }
+    const grid = document.getElementById('tablesGrid');
+    grid.innerHTML = tables.map(t => `
+        <div class="table-card">
+            <h4>${t.name}</h4>
+            <button class="generate-btn" onclick="quickGenerate(${t.id},'${t.name}')">Generate QR</button>
+        </div>
+    `).join('');
 }
 
-// Event listeners for DOM
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('qrResult').style.display = 'none';
-});
+// Quick generate
+function quickGenerate(id,name) {
+    document.getElementById('tableId').value = id;
+    document.getElementById('tableName').value = name;
+    generateQRCode();
+}
+
+document.addEventListener('DOMContentLoaded', initQRGenerator);

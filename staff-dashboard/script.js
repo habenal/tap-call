@@ -1,161 +1,286 @@
-// Staff Dashboard JS (Multi-Café Ready)
+// Staff Dashboard JavaScript
 let currentFilter = 'all';
 let socket = null;
-let selectedCafeId = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-    selectedCafeId = document.getElementById('cafeSelect').value;
-
-    // Update selected cafe when dropdown changes
-    document.getElementById('cafeSelect').addEventListener('change', () => {
-        selectedCafeId = document.getElementById('cafeSelect').value;
-        loadRequests();
-    });
-
+// Initialize the staff dashboard
+function initStaffDashboard() {
+    console.log('🚀 Initializing Staff Dashboard...');
+    
     // Connect to Socket.io
     socket = io();
-
-    // Listen for new requests
+    console.log('🔌 Connected to server via Socket.io');
+    
+    // Listen for new requests in real-time
     socket.on('new-request', (newRequest) => {
-        if (newRequest.cafe_id !== selectedCafeId) return;
+        console.log('📞 New request received via socket:', newRequest);
         showNotification(`New request from ${newRequest.table_name}`);
+        
+        // Add the new request to the UI immediately
         addRequestToUI(newRequest);
-        updatePendingCount();
     });
-
-    // Listen for cancelled requests
-    socket.on('request-cancelled', (requestId) => {
-        removeRequestFromUI(requestId);
-        showNotification('Request cancelled by customer', 'error');
-        updatePendingCount();
+    
+    // Listen for request cancellations
+    socket.on('request-cancelled', (cancelledRequestId) => {
+        console.log('🚫 Request cancelled via socket:', cancelledRequestId);
+        showNotification('Request was cancelled by customer');
+        
+        // Remove the request from UI immediately
+        removeRequestFromUI(cancelledRequestId);
     });
-
-    // Listen for completed requests (if needed)
-    socket.on('request-completed', (requestId) => {
-        removeRequestFromUI(requestId);
-        updatePendingCount();
-    });
-
+    
+    // Load initial requests
     loadRequests();
-});
+    
+    console.log('✅ Staff Dashboard Ready');
+}
 
-// Load requests from backend
+// Load requests from API
 async function loadRequests() {
-    if (!selectedCafeId) return;
+    console.log('🔄 Loading requests from API...');
     try {
-        const res = await fetch(`/api/requests?cafe_id=${selectedCafeId}`);
-        const data = await res.json();
+        const response = await fetch('/api/requests');
+        console.log('📡 API response status:', response.status);
+        
+        const data = await response.json();
+        console.log('📦 Received data:', data);
+        
         if (data.success) {
+            console.log(`✅ Loaded ${data.requests.length} requests`);
             displayRequests(data.requests);
-            updatePendingCount();
         } else {
             throw new Error(data.error || 'Failed to load requests');
         }
-    } catch (err) {
-        console.error(err);
-        showNotification('Failed to load requests', 'error');
+    } catch (error) {
+        console.error('❌ Error loading requests:', error);
+        showNotification('Error loading requests', 'error');
     }
 }
 
-// Display list of requests
+// Display requests in the UI
 function displayRequests(requests) {
-    const list = document.getElementById('requestsList');
+    const requestsList = document.getElementById('requestsList');
     const emptyState = document.getElementById('emptyState');
-    if (!list) return;
-
-    const filtered = requests.filter(r => currentFilter === 'all' || r.type === currentFilter);
-
-    if (filtered.length === 0) {
-        list.innerHTML = '';
-        emptyState.style.display = 'block';
+    
+    console.log('🎨 Displaying requests in UI:', requests.length);
+    
+    if (!requestsList) {
+        console.error('❌ requestsList element not found!');
         return;
     }
-
-    emptyState.style.display = 'none';
-
-    list.innerHTML = filtered.map(r => `
-        <div class="request-card" id="request-${r.id}">
+    
+    // Filter requests based on current filter
+    const filteredRequests = requests.filter(request => {
+        if (currentFilter === 'all') return true;
+        return request.type === currentFilter;
+    });
+    
+    console.log(`🔍 Filtered to ${filteredRequests.length} requests (filter: ${currentFilter})`);
+    
+    if (filteredRequests.length === 0) {
+        requestsList.innerHTML = '';
+        if (emptyState) {
+            emptyState.style.display = 'block';
+        }
+        console.log('📭 No requests to display');
+        return;
+    }
+    
+    if (emptyState) {
+        emptyState.style.display = 'none';
+    }
+    
+    requestsList.innerHTML = filteredRequests.map(request => `
+        <div class="request-card" id="request-${request.id}">
             <div class="request-info">
-                <div class="table-name">${r.table_name}</div>
-                <div class="request-type ${r.type}">${r.type === 'waiter' ? '👨‍💼 Waiter Call' : '🧾 Bill Request'}</div>
-                <div class="request-time">${formatTime(new Date(r.created_at))}</div>
+                <div class="table-name">${request.table_name}</div>
+                <div class="request-type ${request.type}">
+                    ${request.type === 'waiter' ? '👨‍💼 Waiter Call' : '🧾 Bill Request'}
+                </div>
+                <div class="request-time">
+                    ${formatTime(new Date(request.created_at))}
+                </div>
             </div>
-            <button class="complete-btn" onclick="completeRequest(${r.id})">Mark Complete</button>
+            <button class="complete-btn" onclick="completeRequest(${request.id})">
+                Mark Complete
+            </button>
         </div>
     `).join('');
+    
+    console.log('✅ Requests displayed in UI');
 }
 
-// Add single request (real-time)
-function addRequestToUI(r) {
-    const list = document.getElementById('requestsList');
-    if (!list) return;
-    if (document.getElementById(`request-${r.id}`)) return;
-
-    const elem = document.createElement('div');
-    elem.className = 'request-card';
-    elem.id = `request-${r.id}`;
-    elem.innerHTML = `
+// Add a single request to UI (for real-time updates)
+function addRequestToUI(request) {
+    console.log('➕ Adding request to UI:', request.id);
+    
+    const requestsList = document.getElementById('requestsList');
+    const emptyState = document.getElementById('emptyState');
+    
+    if (!requestsList) return;
+    
+    // Hide empty state
+    if (emptyState) {
+        emptyState.style.display = 'none';
+    }
+    
+    // Check if request already exists (to avoid duplicates)
+    const existingRequest = document.getElementById(`request-${request.id}`);
+    if (existingRequest) {
+        console.log('⚠️ Request already in UI, skipping');
+        return;
+    }
+    
+    // Create new request element
+    const requestElement = document.createElement('div');
+    requestElement.className = 'request-card';
+    requestElement.id = `request-${request.id}`;
+    requestElement.innerHTML = `
         <div class="request-info">
-            <div class="table-name">${r.table_name}</div>
-            <div class="request-type ${r.type}">${r.type === 'waiter' ? '👨‍💼 Waiter Call' : '🧾 Bill Request'}</div>
-            <div class="request-time">${formatTime(new Date(r.created_at))}</div>
+            <div class="table-name">${request.table_name}</div>
+            <div class="request-type ${request.type}">
+                ${request.type === 'waiter' ? '👨‍💼 Waiter Call' : '🧾 Bill Request'}
+            </div>
+            <div class="request-time">
+                ${formatTime(new Date(request.created_at))}
+            </div>
         </div>
-        <button class="complete-btn" onclick="completeRequest(${r.id})">Mark Complete</button>
+        <button class="complete-btn" onclick="completeRequest(${request.id})">
+            Mark Complete
+        </button>
     `;
-    list.insertBefore(elem, list.firstChild);
+    
+    // Add with animation
+    requestElement.style.opacity = '0';
+    requestElement.style.transform = 'translateY(-20px)';
+    requestsList.insertBefore(requestElement, requestsList.firstChild);
+    
+    // Animate in
+    setTimeout(() => {
+        requestElement.style.transition = 'all 0.3s ease';
+        requestElement.style.opacity = '1';
+        requestElement.style.transform = 'translateY(0)';
+    }, 10);
+    
+    console.log('✅ Request added to UI with animation');
 }
 
-// Remove request
-function removeRequestFromUI(id) {
-    const elem = document.getElementById(`request-${id}`);
-    if (elem) elem.remove();
-}
-
-// Complete request
-async function completeRequest(id) {
-    try {
-        const res = await fetch(`/api/requests/${id}/complete`, { method: 'PUT' });
-        const data = await res.json();
-        if (data.success) removeRequestFromUI(id);
-        updatePendingCount();
-    } catch (err) {
-        console.error(err);
-        showNotification('Failed to complete request', 'error');
+// Remove request from UI (for cancellations)
+function removeRequestFromUI(requestId) {
+    console.log('➖ Removing request from UI:', requestId);
+    
+    const requestElement = document.getElementById(`request-${requestId}`);
+    if (requestElement) {
+        // Animate out
+        requestElement.style.transition = 'all 0.3s ease';
+        requestElement.style.opacity = '0';
+        requestElement.style.transform = 'translateY(-20px)';
+        
+        setTimeout(() => {
+            requestElement.remove();
+            console.log('✅ Request removed from UI');
+            
+            // Show empty state if no requests left
+            const requestsList = document.getElementById('requestsList');
+            if (requestsList.children.length === 0) {
+                const emptyState = document.getElementById('emptyState');
+                if (emptyState) {
+                    emptyState.style.display = 'block';
+                }
+            }
+        }, 300);
+    } else {
+        console.log('⚠️ Request not found in UI for removal:', requestId);
     }
 }
 
-// Filter buttons
-function setFilter(filter, evt) {
+// Complete a request
+async function completeRequest(requestId) {
+    console.log('🎯 Completing request:', requestId);
+    
+    try {
+        const response = await fetch(`/api/requests/${requestId}/complete`, {
+            method: 'PUT'
+        });
+        
+        console.log('📡 Complete request response status:', response.status);
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('✅ Request completed successfully');
+            showNotification('Request completed!');
+            
+            // Remove from UI with animation
+            removeRequestFromUI(requestId);
+        } else {
+            throw new Error(data.error || 'Failed to complete request');
+        }
+    } catch (error) {
+        console.error('❌ Error completing request:', error);
+        showNotification('Error: ' + error.message, 'error');
+    }
+}
+
+// Set filter and refresh display
+function setFilter(filter) {
+    console.log('🔍 Setting filter to:', filter);
     currentFilter = filter;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    if (evt?.target) evt.target.classList.add('active');
+    
+    // Update active filter button
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
     loadRequests();
 }
 
-// Format time
+// Show notification
+function showNotification(message, type = 'success') {
+    console.log('📢 Notification:', message);
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'error' ? '#FF3B30' : '#34C759'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 500;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Format time for display
 function formatTime(date) {
-    const diff = Math.floor((new Date() - date) / 60000);
-    if (diff < 1) return 'Just now';
-    if (diff === 1) return '1 minute ago';
-    if (diff < 60) return `${diff} minutes ago`;
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins === 1) return '1 minute ago';
+    if (diffMins < 60) return `${diffMins} minutes ago`;
+    
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-// Notification
-function showNotification(msg, type='success') {
-    const n = document.createElement('div');
-    n.textContent = msg;
-    n.style.cssText = `
-        position: fixed; top: 20px; right: 20px;
-        background: ${type==='error'?'#FF3B30':'#34C759'};
-        color: white; padding: 12px 18px; border-radius: 8px; z-index: 1000;
-    `;
-    document.body.appendChild(n);
-    setTimeout(()=>n.remove(), 3000);
-}
-
-// Update pending count display
-function updatePendingCount() {
-    const count = document.querySelectorAll('.request-card').length;
-    document.getElementById('pendingCount').textContent = `${count} pending`;
-}
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', initStaffDashboard);
