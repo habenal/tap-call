@@ -4,6 +4,7 @@ function initQRGenerator() {
     generateQuickTables();
 }
 
+// Generate QR code for the page preview
 async function generateQRCode() {
     const tableId = document.getElementById('tableId').value.trim();
     const tableName = document.getElementById('tableName').value.trim();
@@ -23,9 +24,9 @@ async function generateQRCode() {
 
         currentQRData = data;
 
-        // Render QR image with decoration
+        // Display QR image directly from decorated DataURL
         const qrImg = document.getElementById('qrImage');
-        qrImg.src = await createDecoratedQR(data.dataUrl, tableName);
+        qrImg.src = data.dataUrl;
 
         document.getElementById('qrResult').style.display = 'block';
 
@@ -35,40 +36,7 @@ async function generateQRCode() {
     }
 }
 
-async function createDecoratedQR(dataUrl, tableName) {
-    return new Promise(resolve => {
-        const img = new Image();
-        img.src = dataUrl;
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const padding = 40;
-            canvas.width = img.width + padding * 2;
-            canvas.height = img.height + padding * 2 + 80; // header/footer space
-
-            ctx.fillStyle = "#fff";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Header
-            ctx.fillStyle = "#000";
-            ctx.font = "bold 24px Arial";
-            ctx.textAlign = "center";
-            ctx.fillText(tableName, canvas.width / 2, 30);
-
-            // QR
-            ctx.drawImage(img, padding, 50);
-
-            // Footer
-            ctx.font = "18px Arial";
-            ctx.fillText("Scan to call waiter", canvas.width / 2, canvas.height - 30);
-            ctx.font = "14px Arial";
-            ctx.fillText("Powered by RoG Digitals", canvas.width / 2, canvas.height - 10);
-
-            resolve(canvas.toDataURL());
-        }
-    });
-}
-
+// Download QR (server-generated decorated PNG)
 function downloadQRCode() {
     if (!currentQRData) return alert("Generate QR first");
 
@@ -78,6 +46,7 @@ function downloadQRCode() {
     link.click();
 }
 
+// Print QR (uses on-page preview)
 function printQRCode() {
     if (!currentQRData) return alert("Generate QR first");
 
@@ -89,7 +58,7 @@ function printQRCode() {
                 <style>
                     body { font-family: Arial,sans-serif; text-align: center; padding: 40px; }
                     .table-name { font-size: 24px; font-weight: bold; margin-bottom: 20px; }
-                    .qr-container { margin: 20px auto; max-width: 300px; }
+                    .qr-container { margin: 20px auto; max-width: 350px; }
                     img { max-width: 100%; border: 1px solid #ddd; padding: 10px; border-radius: 10px; background:#fff; }
                     .scan-text { margin-top: 20px; font-size: 18px; font-weight: 500; }
                     .footer { margin-top: 30px; font-size: 14px; color: #666; }
@@ -109,10 +78,11 @@ function printQRCode() {
     printWindow.print();
 }
 
+// Quick tables preview buttons
 function generateQuickTables() {
     const tables = [];
-    for (let i=1;i<=10;i++) tables.push({id:i, name:`Table ${i}`});
-    tables.push({id:101,name:"Room 101"},{id:102,name:"Room 102"},{id:201,name:"Suite 201"});
+    for (let i = 1; i <= 10; i++) tables.push({ id: i, name: `Table ${i}` });
+    tables.push({ id: 101, name: "Room 101" }, { id: 102, name: "Room 102" }, { id: 201, name: "Suite 201" });
 
     const grid = document.getElementById('tablesGrid');
     grid.innerHTML = tables.map(t => `
@@ -123,7 +93,7 @@ function generateQuickTables() {
     `).join('');
 }
 
-function quickGenerate(id,name) {
+function quickGenerate(id, name) {
     document.getElementById('tableId').value = id;
     document.getElementById('tableName').value = name;
     generateQRCode();
